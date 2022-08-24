@@ -4,9 +4,11 @@ import com.sparta.springassignment01.service.Authority;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Getter
 @NoArgsConstructor
@@ -31,6 +33,24 @@ public class Member extends Timestamped{
         this.nickname = nickname;
         this.password = password;
     }
+
+//    //jpa 영속화 관련,,, equals 와 hashcode 메소드 재정의 해준 것
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) {
+//            return true;
+//        }
+//        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
+//            return false;
+//        }
+//        Member member = (Member) o;
+//        return id != null && Objects.equals(id, member.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return getClass().hashCode();
+//    }
 
     public boolean validatePassword(PasswordEncoder passwordEncoder, String password) {
         return passwordEncoder.matches(password, this.password);

@@ -21,7 +21,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     private final PasswordEncoder passwordEncoder;
-    private TokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
 
     public Member isPresentMember(String nickname) {
         Optional<Member> optionalMember = memberRepository.findByNickname(nickname);
