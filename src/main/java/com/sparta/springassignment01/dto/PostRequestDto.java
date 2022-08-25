@@ -1,17 +1,12 @@
 package com.sparta.springassignment01.dto;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostRequestDto {
-    private final String title;
-    private final String writer;
-    private final String password;
-    private final String content;
-
-
+    private String title;
+    private String content;
 }
