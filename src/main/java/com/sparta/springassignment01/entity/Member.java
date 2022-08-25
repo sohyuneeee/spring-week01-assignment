@@ -27,11 +27,14 @@ public class Member extends Timestamped{
     @Column(nullable = false, unique = true)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Authority authority;
 
     @Builder
-    public Member(String nickname, String password) {
+    public Member(String nickname, String password, Authority authority) {
         this.nickname = nickname;
         this.password = password;
+        this.authority = authority;
     }
 
 //    //jpa 영속화 관련,,, equals 와 hashcode 메소드 재정의 해준 것

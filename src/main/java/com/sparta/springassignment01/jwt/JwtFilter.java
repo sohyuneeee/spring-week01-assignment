@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Key;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -31,10 +32,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-    public static String AUTHORIZATION_HEADER = "Authorization";
-    public static String BEARER_PREFIX = "Bearer ";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
 
-    public static String AUTHORITIES_KEY = "auth";
+    public static final String AUTHORITIES_KEY = "auth";
 
     private final String SECRET_KEY;
 
@@ -68,18 +69,43 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             String subject = claims.getSubject();
-            Collection<? extends GrantedAuthority> authorities =
-                    Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-
             UserDetails principal = userDetailsService.loadUserByUsername(subject);
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(principal, jwt, authorities);
+            // DB의 member의 role을 가져옴
+            Collection<? extends GrantedAuthority> repoMemberRole = principal.getAuthorities();
+
+            // jwt의 role을 가져옴
+            String jwtRole = claims.get(AUTHORITIES_KEY).toString();
+
+            boolean checkRole = false;
+            for (GrantedAuthority role : repoMemberRole) {
+                if (jwtRole.equals(role.getAuthority())) {
+                    checkRole = true;
+                }
+            }
+
+            // db의 role과 jwt의 role 일치하지 않을 때
+            if (!checkRole) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().println(
+                        new ObjectMapper().writeValueAsString(
+                                ResponseDto.fail("BAD_REQUEST","Token이 유효햐지 않습니다.")
+                        )
+                );
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(jwtRole);
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(authority);
+
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(principal, jwt, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); // 시큐리티 체인이기 때문에 해당 메소드 종료 시에는 이 명령어를 사용해야한다.
+
     }
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);

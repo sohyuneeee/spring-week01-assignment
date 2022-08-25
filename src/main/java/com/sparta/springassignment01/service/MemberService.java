@@ -47,6 +47,7 @@ public class MemberService {
         Member member = Member.builder()
                 .nickname(requestDto.getNickname())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
+                .authority(Authority.ROLE_MEMBER)
                 .build();
         memberRepository.save(member);
         return ResponseDto.success(
